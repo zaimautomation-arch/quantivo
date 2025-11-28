@@ -28,18 +28,6 @@ type DemoAd = {
 
 const DEMO_ADS: DemoAd[] = [
   {
-    id: 1,
-    label: "Sponsored ETF",
-    title: "GreenFuture ESG Fund",
-    company: "Nova Asset Management",
-    description:
-      "A globally diversified ESG-focused ETF tracking companies leading the transition toward renewable energy, clean mobility, and sustainable technologies.",
-    cta: "View ETF factsheet",
-    url: "https://example.com/greenfuture",
-    imageUrl:
-      "https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1000&q=80",
-  },
-  {
     id: 2,
     label: "Partner",
     title: "FinEdu Academy – Investing 101",
