@@ -1,26 +1,58 @@
 // app/news/[slug]/page.tsx
 import { fetchAiNews } from "@/lib/news";
-import { notFound } from "next/navigation";
 
 type Props = {
-  params: Promise<{ slug: string }>; // 👈 params è una Promise
+  params: { slug: string };
 };
+
+// tipo Article derivato da fetchAiNews
+type Article = Awaited<ReturnType<typeof fetchAiNews>>[number];
 
 // rimuove la parte tipo " [+123 chars]"
 function cleanContent(content: string): string {
   return content.replace(/\s*\[\+\d+\schars\]$/, "").trim();
 }
 
-export default async function NewsDetailPage(props: Props) {
-  // 👇 qui "sciogliamo" la promise
-  const { slug } = await props.params;
+export const dynamic = "force-dynamic";
 
-  // SSR normale, caching gestito da fetchAiNews (revalidate: 1800)
-  const articles = await fetchAiNews();
+export default async function NewsDetailPage({ params }: Props) {
+  const { slug } = params;
+
+  let articles: Article[] = [];
+
+  try {
+    // SSR normale, caching gestito da fetchAiNews (revalidate interno)
+    articles = await fetchAiNews();
+  } catch (error) {
+    console.error("Error fetching news in detail page:", error);
+  }
+
   const article = articles.find((a) => a.slug === slug);
 
+  // Se proprio non troviamo l'articolo, mostriamo una pagina di fallback
   if (!article) {
-    return notFound();
+    return (
+      <div className="space-y-6 py-4">
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold">Article not available</h1>
+          <p className="text-sm text-slate-400">
+            We couldn&apos;t load this article right now. The news provider may
+            be temporarily unavailable or the link is no longer valid.
+          </p>
+        </header>
+
+        <a
+          href="/news"
+          className="
+            inline-flex w-full items-center justify-center rounded-2xl 
+            bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950
+            transition hover:bg-emerald-400
+          "
+        >
+          Back to all news
+        </a>
+      </div>
+    );
   }
 
   const mainText =
