@@ -1,0 +1,22 @@
+export const UNIVERSE_ETF = [
+  { ticker: "SPY", name: "SPDR S&P 500 ETF", region: "USA" },
+  { ticker: "QQQ", name: "Invesco QQQ Trust (Nasdaq 100)", region: "USA" },
+  { ticker: "VTI", name: "Vanguard Total US Market", region: "USA" },
+  { ticker: "DIA", name: "SPDR Dow Jones Industrial Average", region: "USA" },
+  { ticker: "VT", name: "Vanguard Total World", region: "Global" },
+  { ticker: "VEA", name: "Vanguard FTSE Developed ex-US", region: "Global ex-US" },
+  { ticker: "VWO", name: "Vanguard FTSE Emerging Markets", region: "Emerging Markets" },
+  { ticker: "IEFA", name: "iShares Core MSCI EAFE", region: "Europe + Developed ex-US" },
+  { ticker: "EWU", name: "iShares UK ETF", region: "UK" },
+  { ticker: "EWG", name: "iShares MSCI Germany", region: "Germany" },
+  { ticker: "EWJ", name: "iShares MSCI Japan", region: "Japan" },
+  { ticker: "MCHI", name: "iShares MSCI China", region: "China" },
+  { ticker: "XLK", name: "Technology Select Sector", region: "USA" },
+  { ticker: "XLE", name: "Energy Select Sector", region: "USA" },
+  { ticker: "XLF", name: "Financial Select Sector", region: "USA" },
+  { ticker: "XLY", name: "Consumer Discretionary Select Sector", region: "USA" },
+  { ticker: "ARKK", name: "ARK Innovation ETF", region: "USA" },
+  { ticker: "SMH", name: "VanEck Semiconductor ETF", region: "USA" },
+  { ticker: "AGG", name: "iShares Core US Aggregate Bond", region: "USA" },
+  { ticker: "BND", name: "Vanguard Total Bond Market", region: "USA" }
+];

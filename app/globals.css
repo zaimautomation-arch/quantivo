@@ -1,26 +1,290 @@
 @import "tailwindcss";
 
+/* =========================================================
+   QUANTIVO THEME SYSTEM — Colors, Surfaces, Inputs, Charts
+   ========================================================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ==== DARK MODE (default) ==== */
+  --background: #020617;
+  --foreground: #e5e7eb;
+
+  --card-bg: #0b1221;
+  --card-border: #1e2535;
+
+  --segment-bg: #111827;
+  --segment-border: #1f2937;
+
+  --input-bg: #0f172a;
+  --input-border: #1e293b;
+
+  --accent: #22c55e;
+  --accent-soft: rgba(34, 197, 94, 0.15);
+
+  --chart-bg: rgba(255, 255, 255, 0.04);
+  --chart-grid: rgba(255, 255, 255, 0.1);
 }
 
+/* ===== LIGHT MODE ===== */
+html[data-theme="light"] {
+  --background: #f5f6f8;
+  --foreground: #111827;
+
+  --card-bg: #ffffff;
+  --card-border: #d0d7e2;
+
+  --segment-bg: #e9ecf2;
+  --segment-border: #cdd5e1;
+
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+
+  --accent: #16a34a;
+  --accent-soft: rgba(22, 163, 74, 0.15);
+
+  --chart-bg: rgba(0, 0, 0, 0.03);
+  --chart-grid: rgba(0, 0, 0, 0.08);
+}
+
+/* Tailwind tokens */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    Helvetica, Arial, sans-serif;
+}
+
+/* =========================================================
+   SURFACES
+   ========================================================= */
+
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 1rem;
+}
+
+.quantivo-segment {
+  background-color: var(--segment-bg);
+  border: 1px solid var(--segment-border);
+  border-radius: 1rem;
+}
+.quantivo-segment-box {
+  background: var(--segment-bg);
+  border: 1px solid var(--segment-border);
+  padding: 0.85rem;
+  border-radius: 1rem;
+  transition: 0.2s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+html[data-theme="light"] .quantivo-segment-box {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.quantivo-segment-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+}
+
+.quantivo-segment-box .value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.quantivo-segment-box .label {
+  font-size: 0.73rem;
+  opacity: 0.65;
+}
+
+.quantivo-segment-box .target {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin-top: 0.25rem;
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.input {
+  width: 100%;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--foreground);
+}
+
+.input::placeholder {
+  color: #9ca3af;
+  opacity: 0.85;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-primary {
+  background-color: var(--accent);
+  color: white;
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  transition: 0.15s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(0.9);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--foreground);
+  border-radius: 999px;
+  padding: 0.55rem 1.1rem;
+}
+
+/* =========================================================
+   GRAPH / CHART BASE STYLES
+   (TickerChart usa questi automaticamente)
+   ========================================================= */
+
+.chart-container {
+  background: var(--chart-bg);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.chart-grid line {
+  stroke: var(--chart-grid);
+}
+.chart-wrapper {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 1.2rem;
+  padding: 1rem 1.2rem;
+  margin-top: 1rem;
+  box-shadow: 0px 4px 18px rgba(0,0,0,0.07);
+}
+
+html[data-theme="light"] .chart-wrapper {
+  background: #ffffff;
+  border-color: #d5d9e2;
+  box-shadow: 0px 6px 20px rgba(0,0,0,0.06);
+}
+
+.chart-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-bottom: 0.4rem;
+}
+
+.chart-subtitle {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  text-align: right;
+}
+
+/* =========================================================
+   UTILITY EFFECTS
+   ========================================================= */
+
+.shadow-soft {
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.bg-accent-soft {
+  background-color: var(--accent-soft);
+}
+.reason-text {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  line-height: 1.35rem;
+}
+
+html[data-theme="light"] .reason-text {
+  opacity: 0.75;
+  color: #4b5563; /* grigio più leggibile */
+}
+
+html[data-theme="dark"] .reason-text {
+  opacity: 0.85;
+  color: #cbd5e1;
+}
+/* === CHAT THEME VARIABLES (light + dark) === */
+
+html[data-theme="dark"] {
+  --chat-bg: #1e293b;
+  --chat-border: #334155;
+  --chat-inner-bg: #0f172a;
+
+  --assistant-bubble-bg: #1e293b;
+  --assistant-bubble-border: #334155;
+  --assistant-bubble-fg: #e2e8f0;
+
+  --assistant-avatar-bg: rgba(16, 185, 129, 0.15);
+  --assistant-avatar-fg: #34d399;
+
+  --user-bubble-bg: #10b981;
+  --user-bubble-fg: #0f172a;
+
+  --user-avatar-bg: #334155;
+  --user-avatar-fg: #e2e8f0;
+
+  --input-bg: #0f172a;
+
+  --accent-bg: #10b981;
+  --accent-fg: #0f172a;
+
+  --send-btn-bg: #10b981;
+  --send-btn-hover: #34d399;
+  --send-btn-fg: #0f172a;
+
+  --fg: #f1f5f9;
+  --fg-muted: #94a3b8;
+}
+
+html[data-theme="light"] {
+  --chat-bg: #ffffff;
+  --chat-border: #d1d5db;
+  --chat-inner-bg: #f9fafb;
+
+  --assistant-bubble-bg: #eef2ff;
+  --assistant-bubble-border: #c7d2fe;
+  --assistant-bubble-fg: #1e293b;
+
+  --assistant-avatar-bg: #e0e7ff;
+  --assistant-avatar-fg: #4f46e5;
+
+  --user-bubble-bg: #10b981;
+  --user-bubble-fg: #ffffff;
+
+  --user-avatar-bg: #e2e8f0;
+  --user-avatar-fg: #1f2937;
+
+  --input-bg: #ffffff;
+
+  --accent-bg: #10b981;
+  --accent-fg: white;
+
+  --send-btn-bg: #10b981;
+  --send-btn-hover: #34d399;
+  --send-btn-fg: white;
+
+  --fg: #1e293b;
+  --fg-muted: #64748b;
 }
