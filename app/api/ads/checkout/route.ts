@@ -2,25 +2,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-// Leggo le env UNA volta sola
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const appUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-// Controlli di configurazione lato server
+// Controlli immediati di configurazione
 if (!stripeSecretKey) {
   throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
 }
-
 if (!appUrl) {
   throw new Error("NEXT_PUBLIC_APP_URL is not set in environment variables");
 }
 
-// Inizializzo Stripe con la secret key
 const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2023-10-16" as any,
 });
 
-// prezzo fisso in centesimi: 15 € = 1500
+// 15 € in centesimi
 const AD_PRICE_CENTS = 15_00;
 
 export async function POST(req: NextRequest) {
@@ -55,7 +52,9 @@ export async function POST(req: NextRequest) {
     console.error("Stripe error", err);
     return NextResponse.json(
       {
-        error: err?.message ?? "Stripe error",
+        error:
+          err?.message ??
+          `Stripe error (type: ${typeof err})`,
       },
       { status: 500 }
     );
