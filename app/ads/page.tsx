@@ -13,6 +13,9 @@ type AdFromDb = {
   link: string | null;
   image_urls: string[] | null;
   created_at?: string;
+  status?: string | null;
+  price_cents?: number | null;
+  currency?: string | null;
 };
 
 type DemoAd = {
@@ -41,6 +44,10 @@ const DEMO_ADS: DemoAd[] = [
   },
 ];
 
+// prezzo fisso in centesimi: 15 € = 1500
+const AD_PRICE_CENTS = 15_00;
+const AD_CURRENCY = "EUR";
+
 export default function AdsPage() {
   // form state
   const [campaignTitle, setCampaignTitle] = useState("");
@@ -57,13 +64,14 @@ export default function AdsPage() {
   const [ads, setAds] = useState<AdFromDb[]>([]);
   const [loadingAds, setLoadingAds] = useState(true);
 
-  // Carica gli ads esistenti da Supabase
+  // Carica gli ads esistenti da Supabase (SOLO status = 'paid')
   useEffect(() => {
     async function fetchAds() {
       setLoadingAds(true);
       const { data, error } = await supabase
         .from("ads")
         .select("*")
+        .eq("status", "paid") // 👈 mostra solo gli ads pagati
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -128,6 +136,7 @@ export default function AdsPage() {
       }
 
       // 2) salvo la richiesta di sponsorizzazione su Supabase (tabella "ads")
+      //    Lo stato iniziale è "pending": NON viene mostrata pubblicamente
       const { data, error } = await supabase
         .from("ads")
         .insert({
@@ -137,6 +146,9 @@ export default function AdsPage() {
           link,
           description,
           image_urls: imageUrls,
+          status: "pending", // 👈 non ancora pagato
+          price_cents: AD_PRICE_CENTS,
+          currency: AD_CURRENCY,
         })
         .select()
         .single();
@@ -196,7 +208,7 @@ export default function AdsPage() {
           {loadingAds ? (
             <p className="text-sm text-slate-400">Loading ads…</p>
           ) : ads.length === 0 ? (
-            // fallback: 2 ads “veri” statici con immagini
+            // fallback: ads statici
             <div className="grid gap-3 md:grid-cols-2">
               {DEMO_ADS.map((ad) => (
                 <article
@@ -238,7 +250,7 @@ export default function AdsPage() {
               ))}
             </div>
           ) : (
-            // ads reali da Supabase
+            // ads reali da Supabase (solo paid)
             <div className="grid gap-3 md:grid-cols-2">
               {ads.map((ad) => (
                 <article
@@ -396,7 +408,8 @@ export default function AdsPage() {
               <p className="text-[10px] text-slate-500">
                 Ads are stored in Supabase and images are hosted in the
                 <code className="mx-1">ads-images</code> storage bucket.
-                Payments are processed securely via Stripe (test mode).
+                Payments are processed securely via Stripe (test mode). Your
+                sponsorship will only be displayed after a successful payment.
               </p>
             </div>
           </form>

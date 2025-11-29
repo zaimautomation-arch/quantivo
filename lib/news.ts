@@ -1,4 +1,5 @@
 // lib/news.ts
+
 export type AiNewsArticle = {
   slug: string;
   title: string;
@@ -75,4 +76,15 @@ export async function fetchAiNews(): Promise<AiNewsArticle[]> {
   );
 
   return articles;
+}
+
+// 🔴 NUOVO: trova un singolo articolo a partire dallo slug
+export async function fetchArticleBySlug(
+  slug: string
+): Promise<AiNewsArticle | null> {
+  const articles = await fetchAiNews();
+
+  const article = articles.find((a) => a.slug === slug);
+
+  return article ?? null;
 }

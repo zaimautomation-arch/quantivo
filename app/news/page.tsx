@@ -68,18 +68,7 @@ export default async function NewsPage() {
 
                 <div className="mt-auto pt-2">
                   <Link
-                    href={{
-                      pathname: "/news/article",
-                      query: {
-                        title: article.title,
-                        description: article.description || "",
-                        imageUrl: article.imageUrl || "",
-                        publishedAt: article.publishedAt || "",
-                        url: article.url || "",
-                        sourceName: article.sourceName || "",
-                        content: article.content || "",
-                      },
-                    }}
+                    href={`/news/${encodeURIComponent(article.slug)}`}
                     className="
                       inline-flex w-full items-center justify-center rounded-2xl 
                       bg-emerald-500/90 px-3 py-2 text-sm font-semibold text-slate-950

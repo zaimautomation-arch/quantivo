@@ -1,35 +1,42 @@
-// app/news/article/page.tsx
-
-// Pagina dinamica: ogni richiesta vede i suoi searchParams
-export const dynamic = "force-dynamic";
-
-type RawSearchParams = {
-  [key: string]: string | string[] | undefined;
-};
+// app/news/[slug]/page.tsx
+import { fetchArticleBySlug } from "@/lib/news";
 
 type PageProps = {
-  searchParams?: RawSearchParams;
+  params: {
+    slug: string;
+  };
 };
 
-// helper per gestire string | string[]
-function getParam(value: string | string[] | undefined): string | undefined {
-  if (Array.isArray(value)) return value[0];
-  return value;
-}
+export const dynamic = "force-dynamic";
 
-export default function NewsArticlePage({ searchParams }: PageProps) {
-  const params = searchParams ?? {};
+export default async function NewsArticlePage({ params }: PageProps) {
+  const { slug } = params;
 
-  // 🧪 DEBUG lato server (vedi nei log Vercel o in npm run dev)
-  console.log("NEWS ARTICLE searchParams:", params);
+  const article = await fetchArticleBySlug(slug);
 
-  const title = getParam(params.title);
-  const description = getParam(params.description);
-  const imageUrl = getParam(params.imageUrl);
-  const publishedAt = getParam(params.publishedAt);
-  const url = getParam(params.url);
-  const sourceName = getParam(params.sourceName);
-  const content = getParam(params.content);
+  if (!article) {
+    return (
+      <div className="space-y-6 py-4">
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold">Article not found</h1>
+          <p className="text-sm text-slate-400">
+            This article is no longer available. Please go back to the news
+            list.
+          </p>
+        </header>
+      </div>
+    );
+  }
+
+  const {
+    title,
+    description,
+    imageUrl,
+    publishedAt,
+    url,
+    sourceName,
+    content,
+  } = article;
 
   const mainText =
     (content && content.trim()) ||
@@ -38,41 +45,6 @@ export default function NewsArticlePage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6 py-4">
-      {/* 🧪 DEBUG VISIVO */}
-      <section className="rounded-3xl border border-red-500/40 bg-red-500/5 p-4 text-xs text-red-200 space-y-2">
-        <p className="font-semibold">DEBUG – searchParams</p>
-        <pre className="overflow-x-auto whitespace-pre-wrap">
-          {JSON.stringify(params, null, 2)}
-        </pre>
-
-        <p className="font-semibold pt-2">DEBUG – parsed values</p>
-        <ul className="list-disc list-inside space-y-1">
-          <li>
-            <strong>title:</strong> {title ?? "<undefined>"}
-          </li>
-          <li>
-            <strong>description:</strong>{" "}
-            {description ? description.slice(0, 120) + "…" : "<undefined>"}
-          </li>
-          <li>
-            <strong>imageUrl:</strong> {imageUrl ?? "<undefined>"}
-          </li>
-          <li>
-            <strong>publishedAt:</strong> {publishedAt ?? "<undefined>"}
-          </li>
-          <li>
-            <strong>url:</strong> {url ?? "<undefined>"}
-          </li>
-          <li>
-            <strong>sourceName:</strong> {sourceName ?? "<undefined>"}
-          </li>
-          <li>
-            <strong>content:</strong>{" "}
-            {content ? content.slice(0, 120) + "…" : "<undefined>"}
-          </li>
-        </ul>
-      </section>
-
       {/* Header */}
       <header className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-slate-500">
@@ -101,7 +73,7 @@ export default function NewsArticlePage({ searchParams }: PageProps) {
         )}
       </header>
 
-      {/* Immagine principale */}
+      {/* Immagine */}
       {imageUrl && (
         <div className="overflow-hidden rounded-3xl border border-[var(--card-border)]">
           <img
