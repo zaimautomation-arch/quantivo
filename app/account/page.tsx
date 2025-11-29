@@ -206,7 +206,7 @@ export default function AccountPage() {
         <div className="max-w-md rounded-3xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-center shadow-soft">
           <h1 className="text-lg font-semibold">Quantivo account</h1>
           <p className="mt-2 text-sm text-slate-400">
-            To manage AI preferences, theme and history, please log in or
+            to manage AI preferences, theme and history, please log in or
             create a new account.
           </p>
 
