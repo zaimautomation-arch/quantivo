@@ -1,5 +1,5 @@
 // app/news/[slug]/page.tsx
-import { fetchArticleBySlug } from "@/lib/news";
+import { fetchAiNews } from "@/lib/news";
 
 type PageProps = {
   params: {
@@ -12,11 +12,36 @@ export const dynamic = "force-dynamic";
 export default async function NewsArticlePage({ params }: PageProps) {
   const { slug } = params;
 
-  const article = await fetchArticleBySlug(slug);
+  // 🧪 DEBUG: ricarico tutte le news
+  const articles = await fetchAiNews();
+
+  // log lato server (vedi in npm run dev o nei log Vercel)
+  console.log("NEWS DETAIL slug:", slug);
+  console.log(
+    "NEWS DETAIL available slugs:",
+    articles.map((a) => a.slug)
+  );
+
+  const article = articles.find((a) => a.slug === slug) ?? null;
+
+  // 🧪 DEBUG VISIVO
+  const debugInfo = {
+    slugParam: slug,
+    articlesCount: articles.length,
+    firstSlugs: articles.slice(0, 5).map((a) => a.slug),
+    found: !!article,
+  };
 
   if (!article) {
     return (
       <div className="space-y-6 py-4">
+        <section className="rounded-3xl border border-red-500/40 bg-red-500/5 p-4 text-xs text-red-200 space-y-2">
+          <p className="font-semibold">DEBUG – article not found</p>
+          <pre className="overflow-x-auto whitespace-pre-wrap">
+            {JSON.stringify(debugInfo, null, 2)}
+          </pre>
+        </section>
+
         <header className="space-y-2">
           <h1 className="text-2xl font-semibold">Article not found</h1>
           <p className="text-sm text-slate-400">
@@ -45,6 +70,14 @@ export default async function NewsArticlePage({ params }: PageProps) {
 
   return (
     <div className="space-y-6 py-4">
+      {/* DEBUG BOX */}
+      <section className="rounded-3xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-xs text-emerald-200 space-y-2">
+        <p className="font-semibold">DEBUG – match</p>
+        <pre className="overflow-x-auto whitespace-pre-wrap">
+          {JSON.stringify(debugInfo, null, 2)}
+        </pre>
+      </section>
+
       {/* Header */}
       <header className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-slate-500">
