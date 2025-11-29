@@ -9,7 +9,7 @@ export const UNIVERSE_CRYPTO = [
   { ticker: "AVAX", name: "Avalanche", category: "Layer 1" },
   { ticker: "DOT", name: "Polkadot", category: "Layer 0 / Interoperability" },
   { ticker: "MATIC", name: "Polygon", category: "Layer 2" },
-
+  
   { ticker: "LINK", name: "Chainlink", category: "Oracles" },
   { ticker: "ATOM", name: "Cosmos", category: "Layer 0 / Interoperability" },
   { ticker: "LTC", name: "Litecoin", category: "Payments" },
