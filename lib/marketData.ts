@@ -1,14 +1,5 @@
 // lib/marketData.ts
 
-const FINNHUB_KEY = process.env.FINNHUB_KEY;
-
-if (!FINNHUB_KEY) {
-  console.error(
-    "[Finnhub] Nessuna chiave FINNHUB_KEY trovata (.env.local)."
-  );
-  throw new Error("FINNHUB_KEY mancante");
-}
-
 export type Quote = {
   ticker: string;
   price: number;
@@ -27,6 +18,32 @@ export type CandlePoint = {
   volume: number;
 };
 
+// 🔹 funzione helper per leggere la chiave SOLO quando serve
+function getFinnhubKey(): string | null {
+  const key = process.env.FINNHUB_KEY;
+
+  // sul server la chiave DEVE esserci
+  if (typeof window === "undefined") {
+    if (!key) {
+      console.error(
+        "[Finnhub] Nessuna chiave FINNHUB_KEY trovata (.env.local)."
+      );
+      throw new Error("FINNHUB_KEY mancante");
+    }
+    return key;
+  }
+
+  // sul client non vogliamo mai usare la chiave (non esposta)
+  if (!key) {
+    console.warn(
+      "[Finnhub] FINNHUB_KEY non disponibile sul client (ok, le chiamate a Finnhub vanno fatte lato server)."
+    );
+    return null;
+  }
+
+  return key;
+}
+
 // 🔹 Cache in memoria per i prezzi (10 minuti)
 const QUOTE_TTL_MS = 10 * 60 * 1000;
 const quoteCache = new Map<string, { quote: Quote; at: number }>();
@@ -40,6 +57,12 @@ let rateLimitedUntil: number | null = null;
 async function fetchQuoteFromApi(ticker: string): Promise<Quote | null> {
   if (rateLimitedUntil && Date.now() < rateLimitedUntil) {
     console.warn("[Finnhub] In rate limit, salto chiamata per", ticker);
+    return null;
+  }
+
+  const FINNHUB_KEY = getFinnhubKey();
+  if (!FINNHUB_KEY) {
+    // siamo sul client, non dovremmo arrivare qui
     return null;
   }
 
@@ -126,6 +149,12 @@ export async function fetchDailyCandles(
 ): Promise<CandlePoint[]> {
   if (rateLimitedUntil && Date.now() < rateLimitedUntil) {
     console.warn("[Finnhub] In rate limit, salto candles per", ticker);
+    return [];
+  }
+
+  const FINNHUB_KEY = getFinnhubKey();
+  if (!FINNHUB_KEY) {
+    // sul client non facciamo chiamate dirette a Finnhub
     return [];
   }
 
