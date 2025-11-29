@@ -9,9 +9,10 @@ import {
   type AIResult,
 } from "../../lib/AiAdvisor";
 import type { Quote } from "../../lib/marketData";
+import { fetchQuote } from "../../lib/marketData";
+import { fetchLatestClose } from "../../lib/historyData";
 import AiIdeaCard from "../../components/AiIdeaCard";
 import { normalizeLang } from "../../lib/i18n";
-import { fetchLatestClose } from "../../lib/historyData";
 
 function findQuote(ticker: string, prices: Quote[]): Quote | undefined {
   const t = ticker.toUpperCase();
@@ -61,23 +62,54 @@ export default async function AiPage() {
   const text = AI_TEXTS[lang] ?? AI_TEXTS["en"];
 
   // arricchiamo le idee con il prezzo:
-  // 1) prima tentiamo con i prezzi live (Finnhub) in data.prices
-  // 2) se è un ETF e il prezzo manca, facciamo fallback su AlphaVantage (ultimo close)
+  // 1) proviamo con i prezzi già calcolati in data.prices (Finnhub)
+  // 2) se mancano, facciamo una fetch diretta a Finnhub per quel ticker
+  // 3) se è un ETF e manca ancora, fallback su AlphaVantage (ultimo close)
   const ideasWithPrice: InvestmentIdeaWithPrice[] = await Promise.all(
     data.ideas.map(async (idea: InvestmentIdea) => {
-      const quote = findQuote(idea.ticker, data.prices);
-      let priceNow: number | null = quote?.price ?? null;
+      const quoteFromBatch = findQuote(idea.ticker, data.prices);
+      let priceNow: number | null = quoteFromBatch?.price ?? null;
 
       const kind = (idea as any).kind as string | undefined;
+      const kindLower = (kind ?? "").toLowerCase();
 
-      const isEtf =
-        typeof kind === "string" &&
-        kind.toLowerCase().includes("etf");
+      const isEtf = kindLower.includes("etf");
+      const isCrypto =
+        kindLower.includes("crypto") ||
+        kindLower.includes("coin") ||
+        kindLower.includes("btc") ||
+        kindLower.includes("eth");
 
-      if ((priceNow === null || priceNow === 0) && isEtf) {
-        // fallback: ultimo close da AlphaVantage
-        priceNow = await fetchLatestClose(idea.ticker);
+      // 2) se il prezzo manca, proviamo una fetch diretta a Finnhub
+      if (priceNow === null || priceNow === 0) {
+        try {
+          const liveQuote = await fetchQuote(idea.ticker);
+          if (liveQuote && liveQuote.price && !Number.isNaN(liveQuote.price)) {
+            priceNow = liveQuote.price;
+          }
+        } catch (err) {
+          console.error("[AI page] Errore fetchQuote per", idea.ticker, err);
+        }
       }
+
+      // 3) se ancora nulla e si tratta di ETF, usiamo AlphaVantage (ultimo close)
+      if ((priceNow === null || priceNow === 0) && isEtf) {
+        try {
+          const latest = await fetchLatestClose(idea.ticker);
+          if (latest && !Number.isNaN(latest)) {
+            priceNow = latest;
+          }
+        } catch (err) {
+          console.error(
+            "[AI page] Errore fetchLatestClose (Alpha) per",
+            idea.ticker,
+            err
+          );
+        }
+      }
+
+      // per crypto: adesso abbiamo almeno provato Finnhub direttamente;
+      // se ancora null, AiIdeaCard userà la base 100 solo come fallback grafico.
 
       return { ...idea, priceNow };
     })
