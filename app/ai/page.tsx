@@ -7,21 +7,22 @@ import {
   getAIInvestmentIdeas,
   type InvestmentIdea,
   type AIResult,
-} from "../../lib/AiAdvisor";
-import type { Quote } from "../../lib/marketData";
-import { fetchQuote } from "../../lib/marketData";
-import { fetchLatestClose } from "../../lib/historyData";
+} 
+from "../../lib/AiAdvisor";
 import AiIdeaCard from "../../components/AiIdeaCard";
 import { normalizeLang } from "../../lib/i18n";
 
-function findQuote(ticker: string, prices: Quote[]): Quote | undefined {
-  const t = ticker.toUpperCase();
-  return prices.find((q) => q.ticker.toUpperCase() === t);
-}
+import type { Quote } from "../../lib/marketData";
+import { fetchQuotes } from "../../lib/marketData";
+import { fetchLatestClose } from "../../lib/historyData";
 
 export type InvestmentIdeaWithPrice = InvestmentIdea & {
   priceNow: number | null;
 };
+
+function normalizeTicker(t: string) {
+  return t.trim().toUpperCase();
+}
 
 // testi header/disclaimer per lingua
 const AI_TEXTS: Record<
@@ -61,38 +62,43 @@ export default async function AiPage() {
   const data: AIResult = await getAIInvestmentIdeas(lang);
   const text = AI_TEXTS[lang] ?? AI_TEXTS["en"];
 
-  // arricchiamo le idee con il prezzo:
-  // 1) proviamo con i prezzi già calcolati in data.prices (Finnhub)
-  // 2) se mancano, facciamo una fetch diretta a Finnhub per quel ticker
-  // 3) se è un ETF e manca ancora, fallback su AlphaVantage (ultimo close)
-  const ideasWithPrice: InvestmentIdeaWithPrice[] = await Promise.all(
-    data.ideas.map(async (idea: InvestmentIdea) => {
-      const quoteFromBatch = findQuote(idea.ticker, data.prices);
-      let priceNow: number | null = quoteFromBatch?.price ?? null;
+  // 1) prendo TUTTI i ticker dalle idee (stocks + ETF + crypto)
+  const allTickers = Array.from(
+    new Set(
+      data.ideas
+        .map((idea) => normalizeTicker(idea.ticker))
+        .filter(Boolean)
+    )
+  );
 
+  // 2) chiamo Finnhub per tutti questi ticker
+  let liveQuotes: Quote[] = [];
+  try {
+    liveQuotes = await fetchQuotes(allTickers);
+  } catch (err) {
+    console.error("[AI page] Errore fetchQuotes Finnhub", err);
+  }
+
+  const quoteMap = new Map<string, number>();
+  for (const q of liveQuotes) {
+    const t = normalizeTicker(q.ticker);
+    if (q.price && !Number.isNaN(q.price)) {
+      quoteMap.set(t, q.price);
+    }
+  }
+
+  // 3) arricchisco ogni idea con priceNow
+  const ideasWithPrice: InvestmentIdeaWithPrice[] = await Promise.all(
+    data.ideas.map(async (idea) => {
+      const tickerNorm = normalizeTicker(idea.ticker);
       const kind = (idea as any).kind as string | undefined;
       const kindLower = (kind ?? "").toLowerCase();
 
+      let priceNow: number | null = quoteMap.get(tickerNorm) ?? null;
+
       const isEtf = kindLower.includes("etf");
-      const isCrypto =
-        kindLower.includes("crypto") ||
-        kindLower.includes("coin") ||
-        kindLower.includes("btc") ||
-        kindLower.includes("eth");
 
-      // 2) se il prezzo manca, proviamo una fetch diretta a Finnhub
-      if (priceNow === null || priceNow === 0) {
-        try {
-          const liveQuote = await fetchQuote(idea.ticker);
-          if (liveQuote && liveQuote.price && !Number.isNaN(liveQuote.price)) {
-            priceNow = liveQuote.price;
-          }
-        } catch (err) {
-          console.error("[AI page] Errore fetchQuote per", idea.ticker, err);
-        }
-      }
-
-      // 3) se ancora nulla e si tratta di ETF, usiamo AlphaVantage (ultimo close)
+      // fallback ETF: se Finnhub non ha dato nulla, uso AlphaVantage (ultimo close)
       if ((priceNow === null || priceNow === 0) && isEtf) {
         try {
           const latest = await fetchLatestClose(idea.ticker);
@@ -101,15 +107,22 @@ export default async function AiPage() {
           }
         } catch (err) {
           console.error(
-            "[AI page] Errore fetchLatestClose (Alpha) per",
+            "[AI page] Errore fetchLatestClose AlphaVantage per",
             idea.ticker,
             err
           );
         }
       }
 
-      // per crypto: adesso abbiamo almeno provato Finnhub direttamente;
-      // se ancora null, AiIdeaCard userà la base 100 solo come fallback grafico.
+      // DEBUG (puoi toglierlo dopo): logga se non siamo riusciti a trovare il prezzo
+      if (priceNow === null) {
+        console.warn(
+          "[AI page] Nessun prezzo trovato per",
+          idea.ticker,
+          "kind:",
+          kind
+        );
+      }
 
       return { ...idea, priceNow };
     })
