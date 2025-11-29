@@ -1,6 +1,6 @@
 // lib/historyData.ts
 
-const ALPHA_KEY = process.env.ALPHAVANTAGE_KEY!;
+const ALPHA_KEY = process.env.ALPHAVANTAGE_KEY;
 
 export type HistoryPoint = {
   time: number; // ms
@@ -26,7 +26,10 @@ export async function fetchHistory(
   }
 
   if (!ALPHA_KEY) {
-    console.error("ALPHAVANTAGE_KEY mancante");
+    console.error(
+      "[AlphaVantage] ALPHAVANTAGE_KEY mancante. Nessun dato storico per",
+      ticker
+    );
     return [];
   }
 
@@ -87,7 +90,26 @@ export async function fetchHistory(
     cache.set(key, { at: now, data: points });
     return points;
   } catch (err) {
-    console.error("Eccezione fetchHistory Alpha Vantage:", err);
+    console.error("Eccezione fetchHistory Alpha Vantage:", ticker, err);
     return [];
   }
+}
+
+/**
+ * Ricava il "prezzo attuale" come ultimo close disponibile per il ticker.
+ * Utile per ETFs: lo usi come priceNow per calcolare target e mostrare il prezzo.
+ */
+export async function fetchLatestClose(
+  ticker: string
+): Promise<number | null> {
+  // usiamo il range 1M così sfruttiamo la cache di fetchHistory
+  const points = await fetchHistory(ticker, "1M");
+
+  if (!points.length) {
+    console.warn("[AlphaVantage] Nessun dato storico per", ticker);
+    return null;
+  }
+
+  const last = points[points.length - 1];
+  return last.close ?? null;
 }

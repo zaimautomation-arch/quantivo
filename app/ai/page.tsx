@@ -11,9 +11,11 @@ import {
 import type { Quote } from "../../lib/marketData";
 import AiIdeaCard from "../../components/AiIdeaCard";
 import { normalizeLang } from "../../lib/i18n";
+import { fetchLatestClose } from "../../lib/historyData";
 
 function findQuote(ticker: string, prices: Quote[]): Quote | undefined {
-  return prices.find((q) => q.ticker === ticker);
+  const t = ticker.toUpperCase();
+  return prices.find((q) => q.ticker.toUpperCase() === t);
 }
 
 export type InvestmentIdeaWithPrice = InvestmentIdea & {
@@ -58,13 +60,27 @@ export default async function AiPage() {
   const data: AIResult = await getAIInvestmentIdeas(lang);
   const text = AI_TEXTS[lang] ?? AI_TEXTS["en"];
 
-  const ideasWithPrice: InvestmentIdeaWithPrice[] = data.ideas.map(
-    (idea: InvestmentIdea) => {
+  // arricchiamo le idee con il prezzo:
+  // 1) prima tentiamo con i prezzi live (Finnhub) in data.prices
+  // 2) se è un ETF e il prezzo manca, facciamo fallback su AlphaVantage (ultimo close)
+  const ideasWithPrice: InvestmentIdeaWithPrice[] = await Promise.all(
+    data.ideas.map(async (idea: InvestmentIdea) => {
       const quote = findQuote(idea.ticker, data.prices);
-      const priceNow = quote?.price ?? null;
+      let priceNow: number | null = quote?.price ?? null;
+
+      const kind = (idea as any).kind as string | undefined;
+
+      const isEtf =
+        typeof kind === "string" &&
+        kind.toLowerCase().includes("etf");
+
+      if ((priceNow === null || priceNow === 0) && isEtf) {
+        // fallback: ultimo close da AlphaVantage
+        priceNow = await fetchLatestClose(idea.ticker);
+      }
 
       return { ...idea, priceNow };
-    }
+    })
   );
 
   return (
