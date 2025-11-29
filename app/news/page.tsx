@@ -2,7 +2,8 @@
 import { fetchAiNews } from "@/lib/news";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+// opzionale: rigenerare la pagina ogni 30 min
+export const revalidate = 1800;
 
 export default async function NewsPage() {
   const articles = await fetchAiNews();
