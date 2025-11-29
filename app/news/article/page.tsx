@@ -1,6 +1,6 @@
 // app/news/article/page.tsx
 
-// Forziamo la pagina ad essere dinamica: ogni richiesta vede i suoi searchParams
+// Pagina dinamica: ogni richiesta vede i suoi searchParams
 export const dynamic = "force-dynamic";
 
 type RawSearchParams = {
@@ -20,6 +20,9 @@ function getParam(value: string | string[] | undefined): string | undefined {
 export default function NewsArticlePage({ searchParams }: PageProps) {
   const params = searchParams ?? {};
 
+  // 🧪 DEBUG lato server (vedi nei log Vercel o in npm run dev)
+  console.log("NEWS ARTICLE searchParams:", params);
+
   const title = getParam(params.title);
   const description = getParam(params.description);
   const imageUrl = getParam(params.imageUrl);
@@ -35,6 +38,41 @@ export default function NewsArticlePage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6 py-4">
+      {/* 🧪 DEBUG VISIVO */}
+      <section className="rounded-3xl border border-red-500/40 bg-red-500/5 p-4 text-xs text-red-200 space-y-2">
+        <p className="font-semibold">DEBUG – searchParams</p>
+        <pre className="overflow-x-auto whitespace-pre-wrap">
+          {JSON.stringify(params, null, 2)}
+        </pre>
+
+        <p className="font-semibold pt-2">DEBUG – parsed values</p>
+        <ul className="list-disc list-inside space-y-1">
+          <li>
+            <strong>title:</strong> {title ?? "<undefined>"}
+          </li>
+          <li>
+            <strong>description:</strong>{" "}
+            {description ? description.slice(0, 120) + "…" : "<undefined>"}
+          </li>
+          <li>
+            <strong>imageUrl:</strong> {imageUrl ?? "<undefined>"}
+          </li>
+          <li>
+            <strong>publishedAt:</strong> {publishedAt ?? "<undefined>"}
+          </li>
+          <li>
+            <strong>url:</strong> {url ?? "<undefined>"}
+          </li>
+          <li>
+            <strong>sourceName:</strong> {sourceName ?? "<undefined>"}
+          </li>
+          <li>
+            <strong>content:</strong>{" "}
+            {content ? content.slice(0, 120) + "…" : "<undefined>"}
+          </li>
+        </ul>
+      </section>
+
       {/* Header */}
       <header className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-slate-500">
