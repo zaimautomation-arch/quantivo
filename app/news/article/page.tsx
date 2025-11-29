@@ -28,20 +28,6 @@ export default function NewsArticlePage({ searchParams }: PageProps) {
   const sourceName = getParam(params.sourceName);
   const content = getParam(params.content);
 
-  // se qualcuno apre /news/article senza passare niente
-  if (!title) {
-    return (
-      <div className="space-y-6 py-4">
-        <header className="space-y-2">
-          <h1 className="text-2xl font-semibold">Article not available</h1>
-          <p className="text-sm text-slate-400">
-            Please open this article from the news list.
-          </p>
-        </header>
-      </div>
-    );
-  }
-
   const mainText =
     (content && content.trim()) ||
     description ||
