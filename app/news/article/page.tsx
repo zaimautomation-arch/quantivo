@@ -1,7 +1,6 @@
 // app/news/article/page.tsx
 
-// 🔴 IMPORTANTE: questa riga obbliga Next a renderizzare la pagina in modo dinamico,
-// così i searchParams (title, description, ecc.) vengono letti ad ogni richiesta.
+// Forziamo la pagina ad essere dinamica: ogni richiesta vede i suoi searchParams
 export const dynamic = "force-dynamic";
 
 type RawSearchParams = {
@@ -12,7 +11,7 @@ type PageProps = {
   searchParams?: RawSearchParams;
 };
 
-// piccola helper per gestire string | string[]
+// helper per gestire string | string[]
 function getParam(value: string | string[] | undefined): string | undefined {
   if (Array.isArray(value)) return value[0];
   return value;
