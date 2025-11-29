@@ -25,6 +25,11 @@ export default function AiIdeaCard({ idea }: { idea: InvestmentIdeaWithPrice }) 
   const target1W = calcTargetPrice(priceNow, idea.oneWeekPct);
   const target1M = calcTargetPrice(priceNow, idea.oneMonthPct);
 
+  // prezzo da usare nel grafico:
+  // - se abbiamo un prezzo reale (azioni) usiamo quello
+  // - se è null (ETF senza quote live) usiamo 100 come base normalizzata
+  const priceForChart = priceNow ?? 100;
+
   return (
     <article className="group space-y-3 rounded-3xl border border-[var(--card-border)] bg-[var(--card-bg)] p-4 shadow-soft transition-transform duration-150 hover:-translate-y-1 hover:shadow-2xl">
       {/* intestazione card */}
@@ -124,11 +129,11 @@ export default function AiIdeaCard({ idea }: { idea: InvestmentIdeaWithPrice }) 
       </button>
 
       {/* Grafico crescita 1d / 1w / 1m */}
-      {showChart && priceNow !== null && (
+      {showChart && (
         <div className="mt-3">
           <TickerChart
             ticker={idea.ticker}
-            currentPrice={priceNow}
+            currentPrice={priceForChart}
             oneDayPct={idea.oneDayPct}
             oneWeekPct={idea.oneWeekPct}
             oneMonthPct={idea.oneMonthPct}
