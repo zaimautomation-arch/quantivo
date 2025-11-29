@@ -1,0 +1,21 @@
+{
+  "name": "Quantivo – AI Investing Copilot",
+  "short_name": "Quantivo",
+  "start_url": "/ai",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "description": "Quantivo is your AI investing copilot: educational ideas on stocks, ETFs and crypto, plus a place for sponsors and partners to reach investors.",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

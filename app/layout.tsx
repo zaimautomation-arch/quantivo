@@ -14,6 +14,7 @@ import {
   Newspaper,
   User,
 } from "lucide-react";
+import { RegisterSW } from "@/components/RegisterSW";
 
 export const metadata: Metadata = {
   title: "Quantivo – AI Investing Copilot",
@@ -23,6 +24,13 @@ export const metadata: Metadata = {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
     apple: "/logo.png",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#020617",
+  appleWebApp: {
+    capable: true,
+    title: "Quantivo",
+    statusBarStyle: "black-translucent",
   },
 };
 
@@ -41,6 +49,9 @@ export default async function RootLayout({
     <html lang={lang} data-theme="dark" suppressHydrationWarning>
       <body className="min-h-screen bg-[var(--background)] text-[var(--foreground)] antialiased">
         <ThemeProvider>
+          {/* registra il service worker lato client */}
+          <RegisterSW />
+
           <div className="flex min-h-screen flex-col app-bg">
             {/* Top bar desktop */}
             <header className="border-b border-slate-800 bg-slate-950/95 px-4 py-3 text-slate-50 backdrop-blur md:px-8">
