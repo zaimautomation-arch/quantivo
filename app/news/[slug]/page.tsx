@@ -1,48 +1,38 @@
 // app/news/[slug]/page.tsx
-import { fetchArticleBySlug } from "@/lib/news";
+"use client";
 
-type PageProps = {
-  params: {
-    slug: string;
-  };
-};
+import { useSearchParams } from "next/navigation";
 
-// stessa finestra di revalidate delle news
-export const revalidate = 1800;
+export default function NewsArticlePage() {
+  const searchParams = useSearchParams();
 
-export default async function NewsArticlePage({ params }: PageProps) {
-  const { slug } = params;
+  const title = searchParams.get("title") || "";
+  const description = searchParams.get("description") || "";
+  const imageUrl = searchParams.get("imageUrl") || "";
+  const publishedAt = searchParams.get("publishedAt") || "";
+  const url = searchParams.get("url") || "";
+  const sourceName = searchParams.get("sourceName") || "";
+  const content = searchParams.get("content") || "";
 
-  const article = await fetchArticleBySlug(slug);
-
-  if (!article) {
-    return (
-      <div className="space-y-6 py-4">
-        <header className="space-y-2">
-          <h1 className="text-2xl font-semibold">Article not found</h1>
-          <p className="text-sm text-slate-400">
-            This article is no longer available. Please go back to the news
-            list.
-          </p>
-        </header>
-      </div>
-    );
-  }
-
-  const {
-    title,
-    description,
-    imageUrl,
-    publishedAt,
-    url,
-    sourceName,
-    content,
-  } = article;
+  const hasData = Boolean(title);
 
   const mainText =
     (content && content.trim()) ||
     description ||
     "Full content is not available from the provider. Open the full article on the original website.";
+
+  if (!hasData) {
+    return (
+      <div className="space-y-6 py-4">
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold">Article not available</h1>
+          <p className="text-sm text-slate-400">
+            Please open this article from the news list.
+          </p>
+        </header>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 py-4">
@@ -74,7 +64,7 @@ export default async function NewsArticlePage({ params }: PageProps) {
         )}
       </header>
 
-      {/* Immagine */}
+      {/* Immagine principale */}
       {imageUrl && (
         <div className="overflow-hidden rounded-3xl border border-[var(--card-border)]">
           <img

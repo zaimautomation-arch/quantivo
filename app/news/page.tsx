@@ -2,8 +2,7 @@
 import { fetchAiNews } from "@/lib/news";
 import Link from "next/link";
 
-// opzionale: rigenerare la pagina ogni 30 min
-export const revalidate = 1800;
+export const revalidate = 1800; // opzionale: aggiorna ogni 30 min
 
 export default async function NewsPage() {
   const articles = await fetchAiNews();
@@ -69,7 +68,18 @@ export default async function NewsPage() {
 
                 <div className="mt-auto pt-2">
                   <Link
-                    href={`/news/${encodeURIComponent(article.slug)}`}
+                    href={{
+                      pathname: `/news/${encodeURIComponent(article.slug)}`,
+                      query: {
+                        title: article.title,
+                        description: article.description || "",
+                        imageUrl: article.imageUrl || "",
+                        publishedAt: article.publishedAt || "",
+                        url: article.url || "",
+                        sourceName: article.sourceName || "",
+                        content: article.content || "",
+                      },
+                    }}
                     className="
                       inline-flex w-full items-center justify-center rounded-2xl 
                       bg-emerald-500/90 px-3 py-2 text-sm font-semibold text-slate-950
