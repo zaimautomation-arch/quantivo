@@ -409,7 +409,7 @@ export default function AdsPage() {
                 Ads are stored in Supabase and images are hosted in the
                 <code className="mx-1">ads-images</code> storage bucket.
                 Payments are processed securely via Stripe (test mode). Your
-                sponsorship will Only be displayed after a successful payment.
+                sponsorship will Only be Displayed after a successful payment.
               </p>
             </div>
           </form>
