@@ -1,28 +1,54 @@
 // app/api/ads/checkout/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-
-// Controlli immediati di configurazione
-if (!stripeSecretKey) {
-  throw new Error("STRIPE_SECRET_KEY is not set in environment variables");
-}
-if (!appUrl) {
-  throw new Error("NEXT_PUBLIC_APP_URL is not set in environment variables");
-}
-
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: "2023-10-16" as any,
-});
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "";
+const appUrl =
+  process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || "";
 
 // 15 € in centesimi
 const AD_PRICE_CENTS = 15_00;
 
-export async function POST(req: NextRequest) {
+let stripe: Stripe | null = null;
+if (stripeSecretKey) {
+  stripe = new Stripe(stripeSecretKey, {
+    apiVersion: "2023-10-16" as any,
+  });
+} else {
+  console.error("STRIPE_SECRET_KEY is not set in environment variables");
+}
+
+export async function POST(req: Request) {
   try {
+    if (!stripe) {
+      return NextResponse.json(
+        { error: "Stripe is not configured (missing STRIPE_SECRET_KEY)" },
+        { status: 500 }
+      );
+    }
+
+    if (!appUrl || !appUrl.startsWith("http")) {
+      console.error("APP_URL / NEXT_PUBLIC_APP_URL non valida:", appUrl);
+      return NextResponse.json(
+        {
+          error:
+            "APP_URL / NEXT_PUBLIC_APP_URL non valida. Deve iniziare con http o https.",
+        },
+        { status: 500 }
+      );
+    }
+
     const { adId } = await req.json();
+
+    if (!adId) {
+      return NextResponse.json(
+        { error: "Missing adId in request body" },
+        { status: 400 }
+      );
+    }
+
+    const successUrl = `${appUrl}/ads?status=success`;
+    const cancelUrl = `${appUrl}/ads?status=cancel`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -41,10 +67,10 @@ export async function POST(req: NextRequest) {
         },
       ],
       metadata: {
-        ad_id: adId ?? "",
+        ad_id: adId,
       },
-      success_url: `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/checkout/cancel`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
     return NextResponse.json({ url: session.url }, { status: 200 });
