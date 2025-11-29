@@ -1,28 +1,33 @@
 // app/news/article/page.tsx
-type PageProps = {
-  searchParams: {
-    title?: string;
-    description?: string;
-    imageUrl?: string;
-    publishedAt?: string;
-    url?: string;
-    sourceName?: string;
-    content?: string;
-  };
+
+// 🔴 IMPORTANTE: questa riga obbliga Next a renderizzare la pagina in modo dinamico,
+// così i searchParams (title, description, ecc.) vengono letti ad ogni richiesta.
+export const dynamic = "force-dynamic";
+
+type RawSearchParams = {
+  [key: string]: string | string[] | undefined;
 };
 
-export const dynamic = "force-static";
+type PageProps = {
+  searchParams?: RawSearchParams;
+};
+
+// piccola helper per gestire string | string[]
+function getParam(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
 
 export default function NewsArticlePage({ searchParams }: PageProps) {
-  const {
-    title,
-    description,
-    imageUrl,
-    publishedAt,
-    url,
-    sourceName,
-    content,
-  } = searchParams;
+  const params = searchParams ?? {};
+
+  const title = getParam(params.title);
+  const description = getParam(params.description);
+  const imageUrl = getParam(params.imageUrl);
+  const publishedAt = getParam(params.publishedAt);
+  const url = getParam(params.url);
+  const sourceName = getParam(params.sourceName);
+  const content = getParam(params.content);
 
   // se qualcuno apre /news/article senza passare niente
   if (!title) {
