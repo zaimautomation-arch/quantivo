@@ -2,7 +2,7 @@
 import { fetchAiNews } from "@/lib/news";
 import Link from "next/link";
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export default async function NewsPage() {
   const articles = await fetchAiNews();
@@ -68,7 +68,18 @@ export default async function NewsPage() {
 
                 <div className="mt-auto pt-2">
                   <Link
-                    href={`/news/${article.slug}`}
+                    href={{
+                      pathname: "/news/article",
+                      query: {
+                        title: article.title,
+                        description: article.description || "",
+                        imageUrl: article.imageUrl || "",
+                        publishedAt: article.publishedAt || "",
+                        url: article.url || "",
+                        sourceName: article.sourceName || "",
+                        content: article.content || "",
+                      },
+                    }}
                     className="
                       inline-flex w-full items-center justify-center rounded-2xl 
                       bg-emerald-500/90 px-3 py-2 text-sm font-semibold text-slate-950

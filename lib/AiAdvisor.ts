@@ -50,9 +50,9 @@ export async function getAIInvestmentIdeas(
   console.log("[AIAdvisor] Cache scaduta/lingua diversa, chiamo Finnhub + OpenAI. lang:", lang);
 
   // Limito l'universo per non far esplodere i token e il rate limit Finnhub
-  const stocks = UNIVERSE_STOCKS.slice(0, 15);
+  const stocks = UNIVERSE_STOCKS.slice(0, 30);
   const crypto = UNIVERSE_CRYPTO.slice(0, 5);
-  const etf = UNIVERSE_ETF.slice(0, 10);
+  const etf = UNIVERSE_ETF.slice(0, 25);
 
   const allTickers = [
     ...stocks.map((s) => s.ticker),

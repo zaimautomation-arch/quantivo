@@ -10,12 +10,12 @@ export type AiNewsArticle = {
   publishedAt: string;
 };
 
-function slugify(title: string, index: number): string {
-  const base = title
+// slug basato SOLO sul titolo, così è stabile
+function slugify(title: string): string {
+  return title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
-  return `${base}-${index}`;
 }
 
 export async function fetchAiNews(): Promise<AiNewsArticle[]> {
@@ -28,29 +28,22 @@ export async function fetchAiNews(): Promise<AiNewsArticle[]> {
   const url = new URL("https://newsapi.org/v2/everything");
 
   // AI + FINANZA
-  // SOLO notizie di finanza ed economia
-url.searchParams.set(
-  "q",
-  [
-    // macroeconomia
-    '"economy" OR "economic growth" OR "inflation" OR "interest rates" OR "central bank" OR "ECB" OR "Federal Reserve" OR "GDP" OR "unemployment"',
-    
-    "OR",
-
-    // mercati finanziari
-    '"stock market" OR stocks OR equities OR bonds OR "treasury yields" OR commodities OR gold OR oil',
-
-    "OR",
-
-    // investing & trading
-    '"investing" OR investors OR "portfolio" OR "asset management" OR trading OR markets',
-
-    "OR",
-
-    // finanza e bancario
-    'finance OR financial OR fintech OR banking OR "wealth management" OR "investment bank"'
-  ].join(" ")
-);
+  url.searchParams.set(
+    "q",
+    [
+      // macroeconomia
+      '"economy" OR "economic growth" OR "inflation" OR "interest rates" OR "central bank" OR "ECB" OR "Federal Reserve" OR "GDP" OR "unemployment"',
+      "OR",
+      // mercati finanziari
+      '"stock market" OR stocks OR equities OR bonds OR "treasury yields" OR commodities OR gold OR oil',
+      "OR",
+      // investing & trading
+      '"investing" OR investors OR "portfolio" OR "asset management" OR trading OR markets',
+      "OR",
+      // finanza e bancario
+      'finance OR financial OR fintech OR banking OR "wealth management" OR "investment bank"',
+    ].join(" ")
+  );
 
   url.searchParams.set("language", "en");
   url.searchParams.set("sortBy", "publishedAt");
@@ -58,7 +51,7 @@ url.searchParams.set(
 
   const res = await fetch(url.toString(), {
     headers: { "X-Api-Key": apiKey },
-    next: { revalidate: 1800 }, // max 1 chiamata ogni 30 min
+    next: { revalidate: 1800 }, // max 1 chiamata ogni 30 min, cache condivisa
   });
 
   if (!res.ok) {
@@ -69,8 +62,8 @@ url.searchParams.set(
   const json = await res.json();
 
   const articles: AiNewsArticle[] = (json.articles || []).map(
-    (article: any, index: number) => ({
-      slug: slugify(article.title || "ai-finance-news", index),
+    (article: any) => ({
+      slug: slugify(article.title || "ai-finance-news"),
       title: article.title ?? "Untitled",
       description: article.description ?? "",
       content: article.content ?? "",
