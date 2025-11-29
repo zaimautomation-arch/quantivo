@@ -27,11 +27,15 @@ export default function SignUpPage() {
 
     setLoading(true);
 
+    // 👇 URL dinamico dal .env (funziona su localhost *e* Vercel)
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const redirectUrl = `${appUrl}/account/verify`;
+
     const { data, error: signError } = await supabase.auth.signUp({
       email: email.trim(),
       password: password.trim(),
       options: {
-        emailRedirectTo: "http://localhost:3000/account/verify",
+        emailRedirectTo: redirectUrl, // 👈 PERFETTO
       },
     });
 
@@ -66,8 +70,7 @@ export default function SignUpPage() {
         <div className="glass rounded-3xl p-6">
           <h1 className="text-xl font-semibold">Crea un account Quantivo</h1>
           <p className="mt-1 text-xs text-slate-400">
-            Personalizza il profilo di rischio, i mercati e lo stile della tua
-            AI finanziaria.
+            Personalizza il profilo di rischio, i mercati e lo stile della tua AI finanziaria.
           </p>
 
           <form onSubmit={handleSignUp} className="mt-4 space-y-3">
